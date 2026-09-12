@@ -32,10 +32,11 @@ DEBUG_LIB="libvaudiogodotnativeopenal3d.${PLATFORM}.template_debug.${ARCH}${LIBE
 RELEASE_LIB="libvaudiogodotnativeopenal3d.${PLATFORM}.template_release.${ARCH}${LIBEXT}"
 
 # vaudionative and OpenAL Soft shared libs to carry alongside the plugin, per platform (see SConstruct).
+# libglfw is only needed by vaudio-debug-window (dev builds) and may not be vendored - copy_to skips it silently if absent.
 if [ "$PLATFORM" = "linux" ]; then
-    RUNTIME_LIBS=(libvaudionative.so libopenal.so.1)
+    RUNTIME_LIBS=(libvaudionative.so libopenal.so.1 libglfw.so.3)
 else
-    RUNTIME_LIBS=(libvaudionative.dylib libopenal.1.dylib)
+    RUNTIME_LIBS=(libvaudionative.dylib libopenal.1.dylib libglfw.3.dylib)
 
     # libvaudionative.dylib is linked with no -install_name, so it records its absolute build-machine path -
     # rewrite the plugin's reference to it (and its own id) to @loader_path so the copy shipped in bin/ resolves.
@@ -46,7 +47,7 @@ else
     install_name_tool -id "@loader_path/libvaudionative.dylib" "$BIN_DIR/libvaudionative.dylib" 2>/dev/null || true
 fi
 
-[ -f "$BIN_DIR/vaudio-render-child" ] && chmod +x "$BIN_DIR/vaudio-render-child"
+[ -f "$BIN_DIR/vaudio-debug-window" ] && chmod +x "$BIN_DIR/vaudio-debug-window"
 
 copy_to() {
     local dest="$1/bin"
@@ -56,7 +57,7 @@ copy_to() {
     for lib in "${RUNTIME_LIBS[@]}"; do
         [ -f "$BIN_DIR/$lib" ] && cp -f "$BIN_DIR/$lib" "$dest/"
     done
-    [ -f "$BIN_DIR/vaudio-render-child" ] && cp -f "$BIN_DIR/vaudio-render-child" "$dest/"
+    [ -f "$BIN_DIR/vaudio-debug-window" ] && cp -f "$BIN_DIR/vaudio-debug-window" "$dest/"
 }
 
 if [ -n "${VAUDIO_RELEASE_DIR:-}" ]; then copy_to "$VAUDIO_RELEASE_DIR"; else echo "VAUDIO_RELEASE_DIR not set - skipping copy to release repo"; fi
