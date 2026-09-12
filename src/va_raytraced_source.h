@@ -74,6 +74,8 @@ public:
 
     bool is_raytraced() const;
 
+    bool is_raytraced_by_listener() const;
+
     va_godot::VAEmitter *get_emitter() const
     {
         return emitter;

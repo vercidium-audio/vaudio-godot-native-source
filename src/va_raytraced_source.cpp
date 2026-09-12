@@ -20,6 +20,7 @@ void VARaytracedSource::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_muffling_gain_lf"), &VARaytracedSource::get_muffling_gain_lf);
     ClassDB::bind_method(D_METHOD("get_muffling_gain_hf"), &VARaytracedSource::get_muffling_gain_hf);
     ClassDB::bind_method(D_METHOD("is_raytraced"), &VARaytracedSource::is_raytraced);
+    ClassDB::bind_method(D_METHOD("is_raytraced_by_listener"), &VARaytracedSource::is_raytraced_by_listener);
 
     // Direct port of VASourceProperties.cs's groups (Reverb/Muffling/Ambience/Advanced) - a subset of VAEmitter's own property surface; Debug Rendering colors not ported, same as VAEmitter.
     ADD_GROUP("Reverb", "");
@@ -260,6 +261,16 @@ void VARaytracedSource::apply_properties_to_emitter()
 bool VARaytracedSource::is_raytraced() const
 {
     return emitter && emitter->is_raytraced();
+}
+
+bool VARaytracedSource::is_raytraced_by_listener() const
+{
+    if (!is_raytraced() || !va_world)
+        return false;
+
+    va_godot::VAEmitter *listener = va_world->get_listener();
+
+    return listener && listener != emitter && listener->has_raytraced_target(emitter);
 }
 
 void VARaytracedSource::process_raytracing(double delta)
